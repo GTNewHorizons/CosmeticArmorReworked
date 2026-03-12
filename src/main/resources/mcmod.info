@@ -1,8 +1,8 @@
 {
   "modListVersion": 2,
   "modList": [{
-    "modid": "cosmeticarmorreworked",
-    "name": "CosmeticArmorReworked",
+	"modid": "${modId}",
+	"name": "${modName}",
     "description": "This mod allows you to wear two sets of armor, one for display, one for function. You can also hide armor for your skin. For PVP, you can stop the mod from functioning on your client side.",
     "version": "${version}",
     "mcversion": "${mcversion}",
@@ -13,9 +13,9 @@
     "logoFile": "",
     "screenshots": [],
     "parent": "",
-    "requiredMods": ["Forge"],
+    "requiredMods": [],
     "dependencies": [],
     "dependants": [],
-    "useDependencyInformation": true
+    "useDependencyInformation": false
   }]
 }

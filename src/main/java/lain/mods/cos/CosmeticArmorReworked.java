@@ -20,8 +20,12 @@ import lain.mods.cos.network.packet.PacketOpenNormalInventory;
 import lain.mods.cos.network.packet.PacketSetSkinArmor;
 import lain.mods.cos.network.packet.PacketSyncCosArmor;
 
-@Mod(modid = "cosmeticarmorreworked", useMetadata = true)
+@Mod(modid = CosmeticArmorReworked.MOD_ID, name = CosmeticArmorReworked.MOD_NAME, acceptedMinecraftVersions = "[1.7.10]", useMetadata = true)
+
 public class CosmeticArmorReworked {
+    public static final String MOD_ID = "cosmeticarmorreworked";
+    public static final String MOD_NAME = "CosmeticArmorReworked";
+    public static final String MOD_GROUP = "lain.mods.cos";
 
     @Mod.Instance("cosmeticarmorreworked")
     public static CosmeticArmorReworked instance;
