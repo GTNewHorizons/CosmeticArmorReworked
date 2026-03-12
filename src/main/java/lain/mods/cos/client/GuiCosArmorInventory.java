@@ -1,8 +1,5 @@
 package lain.mods.cos.client;
 
-import lain.mods.cos.CosmeticArmorReworked;
-import lain.mods.cos.inventory.InventoryCosArmor;
-import lain.mods.cos.network.packet.PacketSetSkinArmor;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.achievement.GuiAchievements;
 import net.minecraft.client.gui.achievement.GuiStats;
@@ -14,13 +11,17 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.inventory.Container;
 import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.opengl.GL11;
 
-public class GuiCosArmorInventory extends InventoryEffectRenderer
-{
+import lain.mods.cos.CosmeticArmorReworked;
+import lain.mods.cos.inventory.InventoryCosArmor;
+import lain.mods.cos.network.packet.PacketSetSkinArmor;
 
-    public static void drawPlayerModel(int p_147046_0_, int p_147046_1_, int p_147046_2_, float p_147046_3_, float p_147046_4_, EntityLivingBase p_147046_5_)
-    {
+public class GuiCosArmorInventory extends InventoryEffectRenderer {
+
+    public static void drawPlayerModel(int p_147046_0_, int p_147046_1_, int p_147046_2_, float p_147046_3_,
+        float p_147046_4_, EntityLivingBase p_147046_5_) {
         GL11.glEnable(2903);
 
         GL11.glPushMatrix();
@@ -64,29 +65,26 @@ public class GuiCosArmorInventory extends InventoryEffectRenderer
         OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
     }
 
-    public static final ResourceLocation texture = new ResourceLocation("cosmeticarmorreworked", "textures/gui/cosarmorinventory.png");
+    public static final ResourceLocation texture = new ResourceLocation(
+        "cosmeticarmorreworked",
+        "textures/gui/cosarmorinventory.png");
 
     private float xSizeFloat;
     private float ySizeFloat;
 
-    public GuiCosArmorInventory(Container container)
-    {
+    public GuiCosArmorInventory(Container container) {
         super(container);
         allowUserInput = true;
     }
 
     @Override
-    protected void actionPerformed(GuiButton button)
-    {
-        if (button.id == 0)
-        {
+    protected void actionPerformed(GuiButton button) {
+        if (button.id == 0) {
             mc.displayGuiScreen(new GuiAchievements(this, mc.thePlayer.getStatFileWriter()));
         }
-        if (button.id == 1)
-            mc.displayGuiScreen(new GuiStats(this, mc.thePlayer.getStatFileWriter()));
+        if (button.id == 1) mc.displayGuiScreen(new GuiStats(this, mc.thePlayer.getStatFileWriter()));
 
-        if (button.id >= 80 && button.id < 84)
-        {
+        if (button.id >= 80 && button.id < 84) {
             int i = button.id - 80;
             InventoryCosArmor inv = CosmeticArmorReworked.invMan.getCosArmorInventoryClient(mc.thePlayer.getUniqueID());
             inv.setSkinArmor(i, !inv.isSkinArmor(i));
@@ -97,10 +95,11 @@ public class GuiCosArmorInventory extends InventoryEffectRenderer
     }
 
     @Override
-    protected void drawGuiContainerBackgroundLayer(float p_drawGuiContainerBackgroundLayer_1_, int p_drawGuiContainerBackgroundLayer_2_, int p_drawGuiContainerBackgroundLayer_3_)
-    {
+    protected void drawGuiContainerBackgroundLayer(float p_drawGuiContainerBackgroundLayer_1_,
+        int p_drawGuiContainerBackgroundLayer_2_, int p_drawGuiContainerBackgroundLayer_3_) {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        mc.getTextureManager().bindTexture(texture);
+        mc.getTextureManager()
+            .bindTexture(texture);
         int i = guiLeft;
         int j = guiTop;
         drawTexturedModalRect(i, j, 0, 0, xSize, ySize);
@@ -109,14 +108,13 @@ public class GuiCosArmorInventory extends InventoryEffectRenderer
     }
 
     @Override
-    protected void drawGuiContainerForegroundLayer(int p_drawGuiContainerForegroundLayer_1_, int p_drawGuiContainerForegroundLayer_2_)
-    {
+    protected void drawGuiContainerForegroundLayer(int p_drawGuiContainerForegroundLayer_1_,
+        int p_drawGuiContainerForegroundLayer_2_) {
         fontRendererObj.drawString(I18n.format("container.crafting", new Object[0]), 106, 16, 4210752);
     }
 
     @Override
-    public void drawScreen(int p_drawScreen_1_, int p_drawScreen_2_, float p_drawScreen_3_)
-    {
+    public void drawScreen(int p_drawScreen_1_, int p_drawScreen_2_, float p_drawScreen_3_) {
         super.drawScreen(p_drawScreen_1_, p_drawScreen_2_, p_drawScreen_3_);
         xSizeFloat = p_drawScreen_1_;
         ySizeFloat = p_drawScreen_2_;
@@ -124,31 +122,33 @@ public class GuiCosArmorInventory extends InventoryEffectRenderer
 
     @SuppressWarnings("unchecked")
     @Override
-    public void initGui()
-    {
+    public void initGui() {
         buttonList.clear();
         super.initGui();
 
         int offset = 0;
-        if (!mc.thePlayer.getActivePotionEffects().isEmpty() && !GuiEvents.isNeiHidden())
-            offset -= 60;
+        if (!mc.thePlayer.getActivePotionEffects()
+            .isEmpty() && !GuiEvents.isNeiHidden()) offset -= 60;
 
-        for (int i = 0; i < 4; i++)
-        {
+        for (int i = 0; i < 4; i++) {
             int j = 3 - i;
-            GuiCosArmorToggleButton t = new GuiCosArmorToggleButton(80 + j, guiLeft + 97 + offset, guiTop + 7 + 18 * i, 5, 5, "");
-            t.state = CosmeticArmorReworked.invMan.getCosArmorInventoryClient(mc.thePlayer.getUniqueID()).isSkinArmor(j) ? 1 : 0;
+            GuiCosArmorToggleButton t = new GuiCosArmorToggleButton(
+                80 + j,
+                guiLeft + 97 + offset,
+                guiTop + 7 + 18 * i,
+                5,
+                5,
+                "");
+            t.state = CosmeticArmorReworked.invMan.getCosArmorInventoryClient(mc.thePlayer.getUniqueID())
+                .isSkinArmor(j) ? 1 : 0;
             buttonList.add(t);
         }
     }
 
     @Override
-    protected void keyTyped(char par1, int par2)
-    {
-        if (par2 == CosmeticArmorReworked.keyHandler.keyOpenCosArmorInventory.getKeyCode())
-            mc.thePlayer.closeScreen();
-        else
-            super.keyTyped(par1, par2);
+    protected void keyTyped(char par1, int par2) {
+        if (par2 == CosmeticArmorReworked.keyHandler.keyOpenCosArmorInventory.getKeyCode()) mc.thePlayer.closeScreen();
+        else super.keyTyped(par1, par2);
     }
 
 }
