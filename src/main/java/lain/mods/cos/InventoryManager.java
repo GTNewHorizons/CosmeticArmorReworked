@@ -217,6 +217,7 @@ public class InventoryManager {
                 e.printStackTrace();
             }
         }
+        cache.invalidateAll();
     }
 
 }
