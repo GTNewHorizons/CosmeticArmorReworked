@@ -4,19 +4,17 @@ import net.minecraft.client.settings.KeyBinding;
 
 import org.lwjgl.input.Keyboard;
 
-import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.Phase;
+import cpw.mods.fml.common.gameevent.InputEvent;
 import lain.mods.cos.CosmeticArmorReworked;
 import lain.mods.cos.network.packet.PacketOpenCosArmorInventory;
 
 public class KeyHandler {
 
-    public KeyBinding keyOpenCosArmorInventory = new KeyBinding(
+    public final KeyBinding keyOpenCosArmorInventory = new KeyBinding(
         "cos.key.openCosArmorInventory",
-        Keyboard.KEY_C,
+        Keyboard.KEY_NONE,
         "key.categories.inventory");
 
     public KeyHandler() {
@@ -24,12 +22,9 @@ public class KeyHandler {
     }
 
     @SubscribeEvent
-    public void handleEvent(ClientTickEvent event) {
-        if (event.phase == Phase.START) {
-            if (keyOpenCosArmorInventory.getIsKeyPressed() && FMLClientHandler.instance()
-                .getClient().inGameHasFocus)
-                CosmeticArmorReworked.network.sendToServer(new PacketOpenCosArmorInventory());
+    public void handleEvent(InputEvent.KeyInputEvent event) {
+        if (keyOpenCosArmorInventory.isPressed()) {
+            CosmeticArmorReworked.network.sendToServer(new PacketOpenCosArmorInventory());
         }
     }
-
 }
