@@ -15,6 +15,7 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.MathHelper;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
@@ -23,6 +24,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
@@ -55,6 +57,13 @@ public class InventoryManager {
             }
 
         });
+
+    public void init(FMLPreInitializationEvent event) {
+        MinecraftForge.EVENT_BUS.register(this);
+        FMLCommonHandler.instance()
+            .bus()
+            .register(this);
+    }
 
     void forceLoad(UUID uuid, InventoryCosArmor inv) throws IOException {
         try {
@@ -219,5 +228,4 @@ public class InventoryManager {
         }
         cache.invalidateAll();
     }
-
 }
