@@ -21,8 +21,6 @@ import lain.mods.cos.inventory.InventoryCosArmor;
 @SuppressWarnings("UnstableApiUsage")
 public class PlayerRenderHandler {
 
-    public static boolean HideCosArmor = false;
-
     private static final ItemStack[] EMPTY = new ItemStack[0];
 
     private final LoadingCache<EntityPlayer, ItemStack[]> cache = CacheBuilder.newBuilder()
@@ -57,9 +55,6 @@ public class PlayerRenderHandler {
         if (player == null) return;
 
         restorePlayersRealArmor(player);
-
-        if (HideCosArmor) return;
-
         swapForCosmeticArmor(player);
     }
 
@@ -71,9 +66,6 @@ public class PlayerRenderHandler {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void handleEvent(RenderPlayerEvent.Pre event) {
         restorePlayersRealArmor(event.entityPlayer);
-
-        if (HideCosArmor) return;
-
         swapForCosmeticArmor(event.entityPlayer);
     }
 

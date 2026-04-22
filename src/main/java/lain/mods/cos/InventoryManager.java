@@ -228,4 +228,8 @@ public class InventoryManager {
         }
         cache.invalidateAll();
     }
+
+    public boolean isClient() {
+        return false;
+    }
 }

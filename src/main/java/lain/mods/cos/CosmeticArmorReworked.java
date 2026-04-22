@@ -8,6 +8,7 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import lain.mods.cos.client.InventoryManagerClient;
 import lain.mods.cos.client.KeyHandler;
 import lain.mods.cos.network.NetworkManager;
 import lain.mods.cos.network.packet.PacketOpenCosArmorInventory;
@@ -39,6 +40,13 @@ public class CosmeticArmorReworked {
     public static InventoryManager invMan;
 
     public static final NetworkManager network = new NetworkManager("lain|nm|cos");
+
+    public static InventoryManagerClient getClient() {
+        if (invMan.isClient()) {
+            return ((InventoryManagerClient) invMan);
+        }
+        throw new IllegalStateException("Client proxy accessed from dedicated server");
+    }
 
     @Mod.EventHandler
     public void init(FMLPreInitializationEvent event) {

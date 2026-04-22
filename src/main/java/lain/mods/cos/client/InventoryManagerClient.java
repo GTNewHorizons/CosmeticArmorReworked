@@ -24,6 +24,8 @@ import lain.mods.cos.inventory.InventoryCosArmor;
 
 public class InventoryManagerClient extends InventoryManager {
 
+    private final PlayerRenderHandler renderHandler = new PlayerRenderHandler();
+    private boolean isRenderActive;
     LoadingCache<UUID, InventoryCosArmor> cacheClient = CacheBuilder.newBuilder()
         .build(new CacheLoader<>() {
 
@@ -39,7 +41,7 @@ public class InventoryManagerClient extends InventoryManager {
     @Override
     public void init(FMLPreInitializationEvent event) {
         super.init(event);
-        MinecraftForge.EVENT_BUS.register(new PlayerRenderHandler());
+        this.toggleRenderer();
         FMLCommonHandler.instance()
             .bus()
             .register(CosmeticArmorReworked.keyHandler = new KeyHandler());
@@ -63,9 +65,28 @@ public class InventoryManagerClient extends InventoryManager {
 
     @SubscribeEvent
     public void handleEvent(ClientDisconnectionFromServerEvent event) {
-        PlayerRenderHandler.HideCosArmor = false;
+        if (!this.isRenderActive) {
+            this.toggleRenderer();
+        }
         cacheClient.invalidateAll();
         map.clear();
     }
 
+    public boolean isRenderActive() {
+        return this.isRenderActive;
+    }
+
+    public void toggleRenderer() {
+        this.isRenderActive = !this.isRenderActive;
+        if (this.isRenderActive) {
+            MinecraftForge.EVENT_BUS.register(this.renderHandler);
+        } else {
+            MinecraftForge.EVENT_BUS.unregister(this.renderHandler);
+        }
+    }
+
+    @Override
+    public boolean isClient() {
+        return true;
+    }
 }
