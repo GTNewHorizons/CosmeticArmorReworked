@@ -1,52 +1,38 @@
 package lain.mods.cos.client;
 
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import net.minecraftforge.event.world.WorldEvent;
 
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import lain.mods.cos.CosmeticArmorReworked;
+import lain.mods.cos.inventory.InventoryCosArmor;
 
 public class PlayerRenderHandler {
 
-    public static boolean HideCosArmor = false;
-
-    private final ItemStack[] EMPTY = new ItemStack[0];
-
-    private final LoadingCache<EntityPlayer, ItemStack[]> cache = CacheBuilder.newBuilder()
-        .expireAfterAccess(60, TimeUnit.SECONDS)
-        .build(new CacheLoader<EntityPlayer, ItemStack[]>() {
-
-            @Override
-            public ItemStack[] load(EntityPlayer owner) throws Exception {
-                return EMPTY;
-            }
-
-        });
+    private final Map<EntityPlayer, ItemStack[]> realArmorsCache = new HashMap<>();
 
     @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
     public void handleCanceledEvent(RenderHandEvent event) {
         EntityPlayer player = Minecraft.getMinecraft().thePlayer;
         if (player == null) return;
 
-        restoreIfCached(player);
+        restorePlayersRealArmor(player);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
     public void handleCanceledEvent(RenderPlayerEvent.Pre event) {
-        if (!event.isCanceled()) return;
-
-        restoreIfCached(event.entityPlayer);
+        if (event.isCanceled()) {
+            restorePlayersRealArmor(event.entityPlayer);
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
@@ -54,58 +40,55 @@ public class PlayerRenderHandler {
         EntityPlayer player = Minecraft.getMinecraft().thePlayer;
         if (player == null) return;
 
-        restoreIfCached(player);
-
-        if (HideCosArmor) return;
-
-        ItemStack[] armor = player.inventory.armorInventory;
-        cache.put(player, Arrays.copyOf(armor, armor.length));
-
-        ItemStack[] cosArmor = CosmeticArmorReworked.invMan.getCosArmorInventoryClient(player.getUniqueID())
-            .getInventory();
-
-        if (cosArmor != null) {
-            for (int i = 0; i < cosArmor.length; i++) {
-                if (CosmeticArmorReworked.invMan.getCosArmorInventoryClient(player.getUniqueID())
-                    .isSkinArmor(i)) armor[i] = null;
-                else if (cosArmor[i] != null) armor[i] = cosArmor[i];
-            }
-        }
+        restorePlayersRealArmor(player);
+        swapForCosmeticArmor(player);
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void handleEvent(RenderPlayerEvent.Post event) {
-        restoreIfCached(event.entityPlayer);
+        restorePlayersRealArmor(event.entityPlayer);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void handleEvent(RenderPlayerEvent.Pre event) {
-        restoreIfCached(event.entityPlayer);
+        restorePlayersRealArmor(event.entityPlayer);
+        swapForCosmeticArmor(event.entityPlayer);
+    }
 
-        if (HideCosArmor) return;
+    @SubscribeEvent
+    public void onWorldUnload(WorldEvent.Unload event) {
+        if (event.world.isRemote) {
+            // this shouldn't be needed since the cache
+            // gets emptied every render tick
+            this.realArmorsCache.clear();
+        }
+    }
 
-        ItemStack[] armor = event.entityPlayer.inventory.armorInventory;
-        cache.put(event.entityPlayer, Arrays.copyOf(armor, armor.length));
+    private void swapForCosmeticArmor(EntityPlayer player) {
+        ItemStack[] armor = player.inventory.armorInventory;
+        realArmorsCache.put(player, Arrays.copyOf(armor, armor.length));
 
-        ItemStack[] cosArmor = CosmeticArmorReworked.invMan.getCosArmorInventoryClient(event.entityPlayer.getUniqueID())
-            .getInventory();
+        final InventoryCosArmor invCosArmor = CosmeticArmorReworked.invMan
+            .getCosArmorInventoryClient(player.getUniqueID());
+        final ItemStack[] cosArmor = invCosArmor.getInventory();
 
         if (cosArmor != null) {
             for (int i = 0; i < cosArmor.length; i++) {
-                if (CosmeticArmorReworked.invMan.getCosArmorInventoryClient(event.entityPlayer.getUniqueID())
-                    .isSkinArmor(i)) armor[i] = null;
-                else if (cosArmor[i] != null) armor[i] = cosArmor[i];
+                if (invCosArmor.isSkinArmor(i)) {
+                    armor[i] = null;
+                } else if (cosArmor[i] != null) {
+                    armor[i] = cosArmor[i];
+                }
             }
         }
     }
 
-    private void restoreIfCached(EntityPlayer player) {
-        ItemStack[] cachedArmor = cache.getUnchecked(player);
-        if (cachedArmor != EMPTY) {
+    private void restorePlayersRealArmor(EntityPlayer player) {
+        ItemStack[] cachedArmor = realArmorsCache.remove(player);
+        if (cachedArmor != null) {
             ItemStack[] armor = player.inventory.armorInventory;
             if (armor != null && cachedArmor.length == armor.length) {
-                for (int i = 0; i < cachedArmor.length; i++) armor[i] = cachedArmor[i];
-                cache.put(player, EMPTY);
+                System.arraycopy(cachedArmor, 0, armor, 0, cachedArmor.length);
             }
         }
     }

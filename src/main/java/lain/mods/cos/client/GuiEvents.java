@@ -41,8 +41,10 @@ public class GuiEvents {
                     CosmeticArmorReworked.network.sendToServer(new PacketOpenCosArmorInventory());
                 }
             } else if (event.button.id == 77) {
-                PlayerRenderHandler.HideCosArmor = !PlayerRenderHandler.HideCosArmor;
-                ((GuiCosArmorToggleButton) event.button).state = PlayerRenderHandler.HideCosArmor ? 1 : 0;
+                CosmeticArmorReworked.getClient()
+                    .toggleRenderer();
+                ((GuiCosArmorToggleButton) event.button).state = CosmeticArmorReworked.getClient()
+                    .isRenderActive() ? 0 : 1;
             }
         }
     }
@@ -72,7 +74,8 @@ public class GuiEvents {
                     10,
                     event.gui instanceof GuiCosArmorInventory ? "cos.gui.buttonNormal" : "cos.gui.buttonCos"));
             GuiCosArmorToggleButton t = new GuiCosArmorToggleButton(77, guiLeft + 60, guiTop + 72, 5, 5, "");
-            t.state = PlayerRenderHandler.HideCosArmor ? 1 : 0;
+            t.state = CosmeticArmorReworked.getClient()
+                .isRenderActive() ? 0 : 1;
             event.buttonList.add(t);
         }
     }

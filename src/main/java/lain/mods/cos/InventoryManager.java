@@ -15,6 +15,7 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.MathHelper;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
@@ -23,6 +24,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
@@ -31,13 +33,14 @@ import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import lain.mods.cos.inventory.InventoryCosArmor;
 import lain.mods.cos.network.packet.PacketSyncCosArmor;
 
+@SuppressWarnings("UnstableApiUsage")
 public class InventoryManager {
 
     LoadingCache<UUID, InventoryCosArmor> cache = CacheBuilder.newBuilder()
-        .build(new CacheLoader<UUID, InventoryCosArmor>() {
+        .build(new CacheLoader<>() {
 
             @Override
-            public InventoryCosArmor load(UUID owner) throws Exception {
+            public InventoryCosArmor load(UUID owner) {
                 InventoryCosArmor inv = new InventoryCosArmor();
 
                 try {
@@ -54,6 +57,13 @@ public class InventoryManager {
             }
 
         });
+
+    public void init(FMLPreInitializationEvent event) {
+        MinecraftForge.EVENT_BUS.register(this);
+        FMLCommonHandler.instance()
+            .bus()
+            .register(this);
+    }
 
     void forceLoad(UUID uuid, InventoryCosArmor inv) throws IOException {
         try {
@@ -154,13 +164,13 @@ public class InventoryManager {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @SubscribeEvent
     public void handleEvent(PlayerLoggedInEvent event) {
         if (event.player instanceof EntityPlayerMP) {
             InventoryCosArmor inv = getCosArmorInventory(event.player.getUniqueID());
-            for (int i = 0; i < inv.getSizeInventory(); i++)
+            for (int i = 0; i < inv.getSizeInventory(); i++) {
                 CosmeticArmorReworked.network.sendToAll(new PacketSyncCosArmor(event.player, i));
+            }
             inv.markClean();
 
             for (EntityPlayerMP other : (List<EntityPlayerMP>) FMLCommonHandler.instance()
@@ -207,10 +217,8 @@ public class InventoryManager {
     }
 
     void onServerStopping() {
-        System.out.println("Server is stopping... force saving all loaded CosmeticArmor data.");
         for (UUID uuid : cache.asMap()
             .keySet()) {
-            System.out.println(uuid);
             try {
                 forceSave(uuid, getCosArmorInventory(uuid));
             } catch (IOException e) {
@@ -218,6 +226,10 @@ public class InventoryManager {
                 e.printStackTrace();
             }
         }
+        cache.invalidateAll();
     }
 
+    public boolean isClient() {
+        return false;
+    }
 }

@@ -1,8 +1,5 @@
 package lain.mods.cos;
 
-import net.minecraftforge.common.MinecraftForge;
-
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -11,9 +8,8 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import lain.mods.cos.client.GuiEvents;
+import lain.mods.cos.client.InventoryManagerClient;
 import lain.mods.cos.client.KeyHandler;
-import lain.mods.cos.client.PlayerRenderHandler;
 import lain.mods.cos.network.NetworkManager;
 import lain.mods.cos.network.packet.PacketOpenCosArmorInventory;
 import lain.mods.cos.network.packet.PacketOpenNormalInventory;
@@ -45,6 +41,13 @@ public class CosmeticArmorReworked {
 
     public static final NetworkManager network = new NetworkManager("lain|nm|cos");
 
+    public static InventoryManagerClient getClient() {
+        if (invMan.isClient()) {
+            return ((InventoryManagerClient) invMan);
+        }
+        throw new IllegalStateException("Client proxy accessed from dedicated server");
+    }
+
     @Mod.EventHandler
     public void init(FMLPreInitializationEvent event) {
         network.registerPacket(1, PacketSyncCosArmor.class);
@@ -54,19 +57,7 @@ public class CosmeticArmorReworked {
 
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
 
-        if (event.getSide()
-            .isClient()) {
-            MinecraftForge.EVENT_BUS.register(new PlayerRenderHandler());
-            FMLCommonHandler.instance()
-                .bus()
-                .register(keyHandler = new KeyHandler());
-            MinecraftForge.EVENT_BUS.register(new GuiEvents());
-        }
-
-        MinecraftForge.EVENT_BUS.register(invMan);
-        FMLCommonHandler.instance()
-            .bus()
-            .register(invMan);
+        invMan.init(event);
     }
 
     @Mod.EventHandler
