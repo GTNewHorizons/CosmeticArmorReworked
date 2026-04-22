@@ -1,19 +1,11 @@
 package lain.mods.cos.client;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 
-import org.apache.commons.io.Charsets;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Maps;
-
-import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -26,17 +18,7 @@ public class InventoryManagerClient extends InventoryManager {
 
     private final PlayerRenderHandler renderHandler = new PlayerRenderHandler();
     private boolean isRenderActive;
-    LoadingCache<UUID, InventoryCosArmor> cacheClient = CacheBuilder.newBuilder()
-        .build(new CacheLoader<>() {
-
-            @Override
-            public InventoryCosArmor load(UUID owner) {
-                return new InventoryCosArmor();
-            }
-
-        });
-
-    Map<UUID, UUID> map = Maps.newHashMap();
+    private final Map<UUID, InventoryCosArmor> cacheClient = new HashMap<>();
 
     @Override
     public void init(FMLPreInitializationEvent event) {
@@ -50,17 +32,7 @@ public class InventoryManagerClient extends InventoryManager {
 
     @Override
     public InventoryCosArmor getCosArmorInventoryClient(UUID uuid) {
-        if (map.isEmpty()) {
-            Minecraft mc = FMLClientHandler.instance()
-                .getClient();
-            if (mc.thePlayer != null) map.put(
-                UUID.nameUUIDFromBytes(
-                    ("OfflinePlayer:" + mc.thePlayer.getGameProfile()
-                        .getName()).getBytes(Charsets.UTF_8)),
-                mc.thePlayer.getUniqueID());
-        }
-        if (map.containsKey(uuid)) uuid = map.get(uuid);
-        return cacheClient.getUnchecked(uuid);
+        return cacheClient.computeIfAbsent(uuid, id -> new InventoryCosArmor());
     }
 
     @SubscribeEvent
@@ -68,8 +40,7 @@ public class InventoryManagerClient extends InventoryManager {
         if (!this.isRenderActive) {
             this.toggleRenderer();
         }
-        cacheClient.invalidateAll();
-        map.clear();
+        cacheClient.clear();
     }
 
     public boolean isRenderActive() {
