@@ -11,25 +11,23 @@ public class GuiHandler implements IGuiHandler {
 
     @Override
     public Object getClientGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
-        switch (id) {
-            case 1:
-                return new GuiCosArmorInventory(
-                    new ContainerCosArmor(
-                        player.inventory,
-                        CosmeticArmorReworked.invMan.getCosArmorInventoryClient(player.getUniqueID()),
-                        player));
+        if (id == 1) {
+            return new GuiCosArmorInventory(
+                new ContainerCosArmor(
+                    player.inventory,
+                    CosmeticArmorReworked.invMan.getCosArmorInventoryClient(player.getUniqueID()),
+                    player));
         }
         return null;
     }
 
     @Override
     public Object getServerGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
-        switch (id) {
-            case 1:
-                return new ContainerCosArmor(
-                    player.inventory,
-                    CosmeticArmorReworked.invMan.getCosArmorInventory(player.getUniqueID()),
-                    player);
+        if (id == 1) {
+            return new ContainerCosArmor(
+                player.inventory,
+                CosmeticArmorReworked.invMan.getCosArmorInventory(player.getUniqueID()),
+                player);
         }
         return null;
     }

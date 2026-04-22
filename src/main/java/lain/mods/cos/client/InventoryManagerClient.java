@@ -21,10 +21,10 @@ import lain.mods.cos.inventory.InventoryCosArmor;
 public class InventoryManagerClient extends InventoryManager {
 
     LoadingCache<UUID, InventoryCosArmor> cacheClient = CacheBuilder.newBuilder()
-        .build(new CacheLoader<UUID, InventoryCosArmor>() {
+        .build(new CacheLoader<>() {
 
             @Override
-            public InventoryCosArmor load(UUID owner) throws Exception {
+            public InventoryCosArmor load(UUID owner) {
                 return new InventoryCosArmor();
             }
 

@@ -120,7 +120,6 @@ public class GuiCosArmorInventory extends InventoryEffectRenderer {
         ySizeFloat = p_drawScreen_2_;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void initGui() {
         buttonList.clear();

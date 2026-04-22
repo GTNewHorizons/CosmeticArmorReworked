@@ -13,14 +13,16 @@ import cpw.mods.fml.relauncher.Side;
 public class NetworkManager {
 
     private final NetworkPacketCodec codec = new NetworkPacketCodec();
-    private final NetworkPacketHandler handler = new NetworkPacketHandler();
 
-    private EnumMap<Side, FMLEmbeddedChannel> channels;
+    private final EnumMap<Side, FMLEmbeddedChannel> channels;
 
     public NetworkManager(String channelName) {
         channels = NetworkRegistry.INSTANCE.newChannel(channelName, codec);
-        for (FMLEmbeddedChannel channel : channels.values()) channel.pipeline()
-            .addAfter(channel.findChannelHandlerNameForType(codec.getClass()), "NetworkPacketHandler", handler);
+        final NetworkPacketHandler handler = new NetworkPacketHandler();
+        for (FMLEmbeddedChannel channel : channels.values()) {
+            channel.pipeline()
+                .addAfter(channel.findChannelHandlerNameForType(codec.getClass()), "NetworkPacketHandler", handler);
+        }
     }
 
     public void registerPacket(int discriminator, Class<? extends NetworkPacket> packetClass) {
