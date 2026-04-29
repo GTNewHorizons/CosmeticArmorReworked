@@ -1,7 +1,5 @@
 package lain.mods.cos.client;
 
-import java.lang.reflect.Method;
-
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraftforge.client.event.GuiScreenEvent;
 
@@ -13,21 +11,6 @@ import lain.mods.cos.network.packet.PacketOpenCosArmorInventory;
 import lain.mods.cos.network.packet.PacketOpenNormalInventory;
 
 public class GuiEvents {
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static boolean isNeiHidden() {
-        boolean hidden = true;
-        try {
-            if (isNEIHidden == null) {
-                Class fake = Class.forName("codechicken.nei.NEIClientConfig");
-                isNEIHidden = fake.getMethod("isHidden");
-            }
-            hidden = (Boolean) isNEIHidden.invoke(null);
-        } catch (Exception ex) {}
-        return hidden;
-    }
-
-    static Method isNEIHidden;
 
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
@@ -59,11 +42,6 @@ public class GuiEvents {
 
             int guiLeft = (event.gui.width - xSize) / 2;
             int guiTop = (event.gui.height - ySize) / 2;
-
-            if (!event.gui.mc.thePlayer.getActivePotionEffects()
-                .isEmpty() && isNeiHidden()) {
-                guiLeft = 160 + (event.gui.width - xSize - 200) / 2;
-            }
 
             event.buttonList.add(
                 new GuiCosArmorButton(
