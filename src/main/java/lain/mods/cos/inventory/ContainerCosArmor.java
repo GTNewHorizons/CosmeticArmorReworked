@@ -8,7 +8,9 @@ import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.inventory.Slot;
 import net.minecraft.inventory.SlotCrafting;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.util.IIcon;
@@ -35,7 +37,6 @@ public class ContainerCosArmor extends Container {
         // NormalArmor
         for (int i = 0; i < 4; i++) {
             final int j = i;
-            final EntityPlayer k = player;
             addSlotToContainer(new Slot(invPlayer, invPlayer.getSizeInventory() - 1 - i, 8, 8 + i * 18) {
 
                 @SideOnly(Side.CLIENT)
@@ -51,10 +52,12 @@ public class ContainerCosArmor extends Container {
 
                 @Override
                 public boolean isItemValid(ItemStack stack) {
-                    if (stack == null) return false;
-
-                    return stack.getItem()
-                        .isValidArmor(stack, j, k);
+                    Item item = stack == null ? null : stack.getItem();
+                    boolean isValidArmor = false;
+                    if (item instanceof ItemArmor) {
+                        isValidArmor = ((ItemArmor) item).armorType == j;
+                    }
+                    return item != null && (isValidArmor || (item instanceof ItemBlock && j == 0));
                 }
 
             });
@@ -63,7 +66,6 @@ public class ContainerCosArmor extends Container {
         // CosmeticArmor
         for (int i = 0; i < 4; i++) {
             final int j = i;
-            final EntityPlayer k = player;
             addSlotToContainer(new Slot(invCosArmor, invCosArmor.getSizeInventory() - 1 - i, 80, 8 + i * 18) {
 
                 @SideOnly(Side.CLIENT)
@@ -79,10 +81,12 @@ public class ContainerCosArmor extends Container {
 
                 @Override
                 public boolean isItemValid(ItemStack stack) {
-                    if (stack == null) return false;
-
-                    return stack.getItem()
-                        .isValidArmor(stack, j, k);
+                    Item item = stack == null ? null : stack.getItem();
+                    boolean isValidArmor = false;
+                    if (item instanceof ItemArmor) {
+                        isValidArmor = ((ItemArmor) item).armorType == j;
+                    }
+                    return item != null && (isValidArmor || (item instanceof ItemBlock && j == 0));
                 }
 
             });
