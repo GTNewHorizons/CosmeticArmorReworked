@@ -1,5 +1,9 @@
 package lain.mods.cos.client;
 
+import java.util.Collections;
+
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreenTooltipHelper;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraftforge.client.event.GuiScreenEvent;
 
@@ -58,4 +62,23 @@ public class GuiEvents {
         }
     }
 
+    @SideOnly(Side.CLIENT)
+    @SubscribeEvent
+    public void guiPostDraw(GuiScreenEvent.DrawScreenEvent.Post event) {
+        if (!(event.gui instanceof GuiInventory) && !(event.gui instanceof GuiCosArmorInventory)) {
+            return;
+        }
+        for (GuiButton button : GuiScreenTooltipHelper.getButtonList(event.gui)) {
+
+            if (button instanceof GuiCosArmorButton cosButton) {
+                String tooltip = cosButton.getTooltipText();
+
+                if (cosButton.visible && cosButton.isHovered() && tooltip != null) {
+                    GuiScreenTooltipHelper
+                        .drawTooltip(event.gui, Collections.singletonList(tooltip), event.mouseX, event.mouseY);
+                    break;
+                }
+            }
+        }
+    }
 }
