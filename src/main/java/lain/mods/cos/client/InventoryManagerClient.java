@@ -6,6 +6,9 @@ import java.util.UUID;
 
 import net.minecraftforge.common.MinecraftForge;
 
+import com.cleanroommc.modularui.api.IGuiHolder;
+import com.cleanroommc.modularui.factory.GuiData;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -13,12 +16,18 @@ import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServer
 import lain.mods.cos.CosmeticArmorReworked;
 import lain.mods.cos.InventoryManager;
 import lain.mods.cos.inventory.InventoryCosArmor;
+import lain.mods.cos.mui.ClientCosmeticArmorGui;
 
 public class InventoryManagerClient extends InventoryManager {
 
     private final PlayerRenderHandler renderHandler = new PlayerRenderHandler();
     private boolean isRenderActive;
     private final Map<UUID, InventoryCosArmor> cacheClient = new HashMap<>();
+
+    @Override
+    public IGuiHolder<GuiData> createCosmeticArmorGui() {
+        return new ClientCosmeticArmorGui();
+    }
 
     @Override
     public void init(FMLPreInitializationEvent event) {

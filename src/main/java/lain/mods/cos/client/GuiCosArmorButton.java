@@ -4,10 +4,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
 public class GuiCosArmorButton extends GuiButton {
+
+    private static final ResourceLocation TEXTURE = new ResourceLocation(
+        "cosmeticarmorreworked",
+        "textures/gui/cosarmorinventory.png");
 
     public GuiCosArmorButton(int arg0, int arg1, int arg2, int arg3, int arg4, String arg5) {
         super(arg0, arg1, arg2, arg3, arg4, arg5);
@@ -17,7 +22,7 @@ public class GuiCosArmorButton extends GuiButton {
     public void drawButton(Minecraft mc, int x, int y) {
         if (this.visible) {
             mc.getTextureManager()
-                .bindTexture(GuiCosArmorInventory.texture);
+                .bindTexture(TEXTURE);
             GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             this.field_146123_n = x >= this.xPosition && y >= this.yPosition
                 && x < this.xPosition + this.width

@@ -5,21 +5,21 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
-import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lain.mods.cos.client.InventoryManagerClient;
 import lain.mods.cos.client.KeyHandler;
+import lain.mods.cos.mui.CosmeticArmorGui;
 import lain.mods.cos.network.NetworkManager;
 import lain.mods.cos.network.packet.PacketOpenCosArmorInventory;
 import lain.mods.cos.network.packet.PacketOpenNormalInventory;
-import lain.mods.cos.network.packet.PacketSetSkinArmor;
 import lain.mods.cos.network.packet.PacketSyncCosArmor;
 
 @Mod(
     modid = CosmeticArmorReworked.MOD_ID,
     name = CosmeticArmorReworked.MOD_NAME,
     acceptedMinecraftVersions = "[1.7.10]",
+    dependencies = "required-after:modularui2;after:serverutilities",
     useMetadata = true)
 
 public class CosmeticArmorReworked {
@@ -50,12 +50,11 @@ public class CosmeticArmorReworked {
 
     @Mod.EventHandler
     public void init(FMLPreInitializationEvent event) {
+        CosmeticArmorGui.init();
+
         network.registerPacket(1, PacketSyncCosArmor.class);
-        network.registerPacket(2, PacketSetSkinArmor.class);
         network.registerPacket(3, PacketOpenCosArmorInventory.class);
         network.registerPacket(4, PacketOpenNormalInventory.class);
-
-        NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
 
         invMan.init(event);
     }
