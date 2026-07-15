@@ -19,6 +19,8 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
+import com.cleanroommc.modularui.api.IGuiHolder;
+import com.cleanroommc.modularui.factory.GuiData;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -31,10 +33,15 @@ import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import lain.mods.cos.inventory.InventoryCosArmor;
+import lain.mods.cos.mui.CosmeticArmorGui;
 import lain.mods.cos.network.packet.PacketSyncCosArmor;
 
 @SuppressWarnings("UnstableApiUsage")
 public class InventoryManager {
+
+    public IGuiHolder<GuiData> createCosmeticArmorGui() {
+        return new CosmeticArmorGui();
+    }
 
     LoadingCache<UUID, InventoryCosArmor> cache = CacheBuilder.newBuilder()
         .build(new CacheLoader<>() {

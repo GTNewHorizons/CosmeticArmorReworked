@@ -1,3 +1,7 @@
 cos.key.openCosArmorInventory=Open Cosmetic Armor Inventory
 cos.gui.buttonCos=Cosmetic Armor
 cos.gui.buttonNormal=Normal
+cos.gui.hideArmor=Hide armor for skin
+cos.gui.showArmor=Show cosmetic or equipped armor
+cos.gui.rendererEnabled=Cosmetic armor rendering enabled
+cos.gui.rendererDisabled=Cosmetic armor rendering disabled

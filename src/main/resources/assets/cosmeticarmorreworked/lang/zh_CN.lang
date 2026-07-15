@@ -1,3 +1,7 @@
 cos.key.openCosArmorInventory=打开时装物品栏
 cos.gui.buttonCos=时装
 cos.gui.buttonNormal=普通
+cos.gui.hideArmor=隐藏护甲以显示皮肤
+cos.gui.showArmor=显示时装或装备护甲
+cos.gui.rendererEnabled=时装护甲渲染已启用
+cos.gui.rendererDisabled=时装护甲渲染已禁用
