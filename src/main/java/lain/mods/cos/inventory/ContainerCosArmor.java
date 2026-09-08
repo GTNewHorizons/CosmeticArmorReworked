@@ -11,6 +11,7 @@ import net.minecraft.inventory.SlotCrafting;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemSkull;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.util.IIcon;
@@ -57,7 +58,8 @@ public class ContainerCosArmor extends Container {
                     if (item instanceof ItemArmor) {
                         isValidArmor = ((ItemArmor) item).armorType == j;
                     }
-                    return item != null && (isValidArmor || (item instanceof ItemBlock && j == 0));
+                    return item != null
+                        && (isValidArmor || ((item instanceof ItemBlock || item instanceof ItemSkull) && j == 0));
                 }
 
             });
@@ -86,7 +88,8 @@ public class ContainerCosArmor extends Container {
                     if (item instanceof ItemArmor) {
                         isValidArmor = ((ItemArmor) item).armorType == j;
                     }
-                    return item != null && (isValidArmor || (item instanceof ItemBlock && j == 0));
+                    return item != null
+                        && (isValidArmor || ((item instanceof ItemBlock || item instanceof ItemSkull) && j == 0));
                 }
 
             });
