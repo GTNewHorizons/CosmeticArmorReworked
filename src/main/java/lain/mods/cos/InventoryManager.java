@@ -67,13 +67,16 @@ public class InventoryManager {
 
     void forceLoad(UUID uuid, InventoryCosArmor inv) throws IOException {
         try {
-            inv.readFromNBT(CompressedStreamTools.readCompressed(new FileInputStream(getDataFile(uuid))));
+            NBTTagCompound compound = CompressedStreamTools.readCompressed(new FileInputStream(getDataFile(uuid)));
+            PosteaCompat.transform("cosarmor:" + uuid, compound);
+            inv.readFromNBT(compound);
         } catch (FileNotFoundException ignored) {}
     }
 
     void forceSave(UUID uuid, InventoryCosArmor inv) throws IOException {
         NBTTagCompound compound = new NBTTagCompound();
         inv.writeToNBT(compound);
+        PosteaCompat.stamp(compound);
         CompressedStreamTools.writeCompressed(compound, new FileOutputStream(getDataFile(uuid)));
     }
 
@@ -139,7 +142,9 @@ public class InventoryManager {
         InventoryCosArmor inv = getCosArmorInventory(uuid);
 
         try {
-            inv.readFromNBT(CompressedStreamTools.readCompressed(new FileInputStream(getDataFile(uuid))));
+            NBTTagCompound compound = CompressedStreamTools.readCompressed(new FileInputStream(getDataFile(uuid)));
+            PosteaCompat.transform("cosarmor:" + uuid, compound);
+            inv.readFromNBT(compound);
         } catch (FileNotFoundException ignored) {} catch (IOException e) {
             System.err.println("Error loading CosmeticArmor data file: " + e.getMessage());
             e.printStackTrace();
@@ -156,6 +161,7 @@ public class InventoryManager {
         InventoryCosArmor inv = getCosArmorInventory(uuid);
         NBTTagCompound compound = new NBTTagCompound();
         inv.writeToNBT(compound);
+        PosteaCompat.stamp(compound);
         try {
             CompressedStreamTools.writeCompressed(compound, new FileOutputStream(getDataFile(uuid)));
         } catch (IOException e) {
