@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -16,14 +18,12 @@ import lain.mods.cos.inventory.InventoryCosArmor;
 
 public class InventoryManagerClient extends InventoryManager {
 
-    private final PlayerRenderHandler renderHandler = new PlayerRenderHandler();
-    private boolean isRenderActive;
+    private boolean isRenderActive = true;
     private final Map<UUID, InventoryCosArmor> cacheClient = new HashMap<>();
 
     @Override
     public void init(FMLPreInitializationEvent event) {
         super.init(event);
-        this.toggleRenderer();
         FMLCommonHandler.instance()
             .bus()
             .register(CosmeticArmorReworked.keyHandler = new KeyHandler());
@@ -43,17 +43,22 @@ public class InventoryManagerClient extends InventoryManager {
         cacheClient.clear();
     }
 
+    public ItemStack getArmorToRender(EntityPlayer player, int slot, ItemStack realArmor) {
+        if (!this.isRenderActive) return realArmor;
+
+        InventoryCosArmor invCosArmor = getCosArmorInventoryClient(player.getUniqueID());
+        if (invCosArmor.isSkinArmor(slot)) return null;
+
+        ItemStack cosArmor = invCosArmor.getStackInSlot(slot);
+        return cosArmor != null ? cosArmor : realArmor;
+    }
+
     public boolean isRenderActive() {
         return this.isRenderActive;
     }
 
     public void toggleRenderer() {
         this.isRenderActive = !this.isRenderActive;
-        if (this.isRenderActive) {
-            MinecraftForge.EVENT_BUS.register(this.renderHandler);
-        } else {
-            MinecraftForge.EVENT_BUS.unregister(this.renderHandler);
-        }
     }
 
     @Override
