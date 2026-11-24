@@ -39,8 +39,8 @@ import lain.mods.cos.network.packet.PacketSyncCosArmor;
 
 /// Keeps each player's cosmetic armor in its own file, cached while the player is online.
 ///
-/// A file whose Postea transform throws is recorded in `failedLoads`: the load fails with the transform's
-/// [ReportedException] and the file is never written, so a failed migration cannot be saved over.
+/// A player whose file fails its Postea transform fails to load with the transform's [ReportedException], and
+/// that player's file is not saved until a later read of it succeeds.
 @SuppressWarnings("UnstableApiUsage")
 public class InventoryManager {
 
@@ -76,6 +76,7 @@ public class InventoryManager {
     }
 
     void read(UUID uuid, InventoryCosArmor inv) throws IOException {
+        failedLoads.remove(uuid);
         NBTTagCompound compound;
         try (FileInputStream in = new FileInputStream(getDataFile(uuid))) {
             compound = CompressedStreamTools.readCompressed(in);
@@ -94,7 +95,8 @@ public class InventoryManager {
 
     void forceSave(UUID uuid) throws IOException {
         if (failedLoads.contains(uuid)) return;
-        InventoryCosArmor inv = getCosArmorInventory(uuid);
+        InventoryCosArmor inv = cache.getIfPresent(uuid);
+        if (inv == null) return;
         NBTTagCompound compound = new NBTTagCompound();
         inv.writeToNBT(compound);
         PosteaCompat.stamp(compound, inv.getSavedStamps());
