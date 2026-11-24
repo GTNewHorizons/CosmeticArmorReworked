@@ -1,6 +1,5 @@
 package lain.mods.cos;
 
-import com.gtnewhorizons.postea.api.IVersionedTransformer;
 import net.minecraft.nbt.NBTTagCompound;
 
 import com.gtnewhorizons.postea.api.CustomDataReplacementManager;
@@ -28,6 +27,18 @@ public final class PosteaCompat {
         if (POSTEA) Impl.stamp(root);
     }
 
+    /// Stamps a freshly built root, keeping the stamps in `carried` (from [#savedStamps]) for transformers not
+    /// registered now. `carried` may be null.
+    public static void stamp(NBTTagCompound root, NBTTagCompound carried) {
+        if (POSTEA) Impl.stamp(root, carried);
+    }
+
+    /// A copy of the stamps on a root read from disk, taken after [#transform]. Null when none were stored or Postea
+    /// is absent.
+    public static NBTTagCompound savedStamps(NBTTagCompound root) {
+        return POSTEA ? Impl.savedStamps(root) : null;
+    }
+
     private static final class Impl {
 
         static void transform(String storageId, NBTTagCompound root) {
@@ -36,6 +47,14 @@ public final class PosteaCompat {
 
         static void stamp(NBTTagCompound root) {
             CustomDataReplacementManager.stamp(root);
+        }
+
+        static void stamp(NBTTagCompound root, NBTTagCompound carried) {
+            CustomDataReplacementManager.stamp(root, carried);
+        }
+
+        static NBTTagCompound savedStamps(NBTTagCompound root) {
+            return CustomDataReplacementManager.savedStamps(root);
         }
     }
 }
