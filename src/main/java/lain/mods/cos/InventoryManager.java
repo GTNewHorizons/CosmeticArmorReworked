@@ -6,7 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -15,6 +17,7 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ReportedException;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -22,6 +25,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -33,8 +37,14 @@ import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import lain.mods.cos.inventory.InventoryCosArmor;
 import lain.mods.cos.network.packet.PacketSyncCosArmor;
 
+/// Keeps each player's cosmetic armor in its own file, cached while the player is online.
+///
+/// A file whose Postea transform throws is recorded in `failedLoads`: the load fails with the transform's
+/// [ReportedException] and the file is never written, so a failed migration cannot be saved over.
 @SuppressWarnings("UnstableApiUsage")
 public class InventoryManager {
+
+    private final Set<UUID> failedLoads = ConcurrentHashMap.newKeySet();
 
     LoadingCache<UUID, InventoryCosArmor> cache = CacheBuilder.newBuilder()
         .build(new CacheLoader<>() {
@@ -44,7 +54,7 @@ public class InventoryManager {
                 InventoryCosArmor inv = new InventoryCosArmor();
 
                 try {
-                    forceLoad(owner, inv);
+                    read(owner, inv);
                 } catch (IOException e) {
                     System.err.println("Error loading CosmeticArmor data file: " + e.getMessage());
                     e.printStackTrace();
@@ -65,23 +75,41 @@ public class InventoryManager {
             .register(this);
     }
 
-    void forceLoad(UUID uuid, InventoryCosArmor inv) throws IOException {
+    void read(UUID uuid, InventoryCosArmor inv) throws IOException {
+        NBTTagCompound compound;
+        try (FileInputStream in = new FileInputStream(getDataFile(uuid))) {
+            compound = CompressedStreamTools.readCompressed(in);
+        } catch (FileNotFoundException ignored) {
+            return;
+        }
         try {
-            NBTTagCompound compound = CompressedStreamTools.readCompressed(new FileInputStream(getDataFile(uuid)));
             PosteaCompat.transform("cosarmor:" + uuid, compound);
-            inv.readFromNBT(compound);
-        } catch (FileNotFoundException ignored) {}
+        } catch (ReportedException e) {
+            failedLoads.add(uuid);
+            throw e;
+        }
+        inv.readFromNBT(compound);
+        inv.setSavedStamps(PosteaCompat.savedStamps(compound));
     }
 
-    void forceSave(UUID uuid, InventoryCosArmor inv) throws IOException {
+    void forceSave(UUID uuid) throws IOException {
+        if (failedLoads.contains(uuid)) return;
+        InventoryCosArmor inv = getCosArmorInventory(uuid);
         NBTTagCompound compound = new NBTTagCompound();
         inv.writeToNBT(compound);
-        PosteaCompat.stamp(compound);
-        CompressedStreamTools.writeCompressed(compound, new FileOutputStream(getDataFile(uuid)));
+        PosteaCompat.stamp(compound, inv.getSavedStamps());
+        try (FileOutputStream out = new FileOutputStream(getDataFile(uuid))) {
+            CompressedStreamTools.writeCompressed(compound, out);
+        }
     }
 
     public InventoryCosArmor getCosArmorInventory(UUID uuid) {
-        return cache.getUnchecked(uuid);
+        try {
+            return cache.getUnchecked(uuid);
+        } catch (UncheckedExecutionException e) {
+            if (e.getCause() instanceof ReportedException) throw (ReportedException) e.getCause();
+            throw e;
+        }
     }
 
     public InventoryCosArmor getCosArmorInventoryClient(UUID uuid) {
@@ -139,17 +167,18 @@ public class InventoryManager {
     @SubscribeEvent
     public void handleEvent(PlayerEvent.LoadFromFile event) {
         UUID uuid = UUID.fromString(event.playerUUID);
+        boolean wasCached = cache.getIfPresent(uuid) != null;
         InventoryCosArmor inv = getCosArmorInventory(uuid);
 
-        try {
-            NBTTagCompound compound = CompressedStreamTools.readCompressed(new FileInputStream(getDataFile(uuid)));
-            PosteaCompat.transform("cosarmor:" + uuid, compound);
-            inv.readFromNBT(compound);
-        } catch (FileNotFoundException ignored) {} catch (IOException e) {
-            System.err.println("Error loading CosmeticArmor data file: " + e.getMessage());
-            e.printStackTrace();
-            cache.refresh(uuid);
-            inv = getCosArmorInventory(uuid);
+        if (wasCached) {
+            try {
+                read(uuid, inv);
+            } catch (IOException e) {
+                System.err.println("Error loading CosmeticArmor data file: " + e.getMessage());
+                e.printStackTrace();
+                cache.refresh(uuid);
+                inv = getCosArmorInventory(uuid);
+            }
         }
 
         inv.markDirty();
@@ -158,12 +187,8 @@ public class InventoryManager {
     @SubscribeEvent
     public void handleEvent(PlayerEvent.SaveToFile event) {
         UUID uuid = UUID.fromString(event.playerUUID);
-        InventoryCosArmor inv = getCosArmorInventory(uuid);
-        NBTTagCompound compound = new NBTTagCompound();
-        inv.writeToNBT(compound);
-        PosteaCompat.stamp(compound);
         try {
-            CompressedStreamTools.writeCompressed(compound, new FileOutputStream(getDataFile(uuid)));
+            forceSave(uuid);
         } catch (IOException e) {
             System.err.println("Error saving CosmeticArmor data file: " + e.getMessage());
             e.printStackTrace();
@@ -195,7 +220,7 @@ public class InventoryManager {
         if (event.player instanceof EntityPlayerMP) {
             UUID uuid = event.player.getUniqueID();
             try {
-                forceSave(uuid, getCosArmorInventory(uuid));
+                forceSave(uuid);
             } catch (IOException e) {
                 System.err.println("Error saving CosmeticArmor data file: " + e.getMessage());
                 e.printStackTrace();
@@ -219,6 +244,7 @@ public class InventoryManager {
     }
 
     void onServerStarting() {
+        failedLoads.clear();
         cache.invalidateAll();
     }
 
@@ -226,7 +252,7 @@ public class InventoryManager {
         for (UUID uuid : cache.asMap()
             .keySet()) {
             try {
-                forceSave(uuid, getCosArmorInventory(uuid));
+                forceSave(uuid);
             } catch (IOException e) {
                 System.err.println("Error saving CosmeticArmor data file: " + e.getMessage());
                 e.printStackTrace();
