@@ -11,6 +11,7 @@ public class InventoryCosArmor implements IInventory {
     ItemStack[] stacks = new ItemStack[4];
     boolean[] isSkinArmor = new boolean[4];
     boolean isDirty = false;
+    NBTTagCompound savedStamps;
 
     @Override
     public void closeInventory() {}
@@ -46,6 +47,15 @@ public class InventoryCosArmor implements IInventory {
     @Override
     public int getSizeInventory() {
         return stacks == null ? 0 : stacks.length;
+    }
+
+    /// The Postea stamps of the file this inventory was read from, or null. Carried into the next write.
+    public NBTTagCompound getSavedStamps() {
+        return savedStamps;
+    }
+
+    public void setSavedStamps(NBTTagCompound savedStamps) {
+        this.savedStamps = savedStamps;
     }
 
     public boolean[] getSkinArmor() {

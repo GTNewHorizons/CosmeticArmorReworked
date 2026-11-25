@@ -20,6 +20,7 @@ import lain.mods.cos.network.packet.PacketSyncCosArmor;
     modid = CosmeticArmorReworked.MOD_ID,
     name = CosmeticArmorReworked.MOD_NAME,
     acceptedMinecraftVersions = "[1.7.10]",
+    dependencies = "after:postea@[1.4.0,)",
     useMetadata = true)
 
 public class CosmeticArmorReworked {
